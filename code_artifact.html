@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘의 학식 메뉴 투표</title>
+    <!-- Tailwind CSS 로드 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Pretendard & Inter -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <!-- Font Awesome 아이콘 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Pretendard', 'Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        navy: {
+                            950: '#070D19',
+                            900: '#0B132B',
+                            800: '#1C2541',
+                            700: '#2A3960',
+                            600: '#3A506B',
+                            500: '#5BC0BE',
+                            400: '#6FFFE9',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-navy-950 text-slate-100 min-h-screen flex flex-col justify-between antialiased selection:bg-sky-500 selection:text-white">
+
+    <!-- 상단 배경 장식 효과 -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-blue-600/20 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 -left-40 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- 메인 컨테이너 -->
+    <main class="relative z-10 w-full max-w-2xl mx-auto px-4 py-8 sm:py-12 flex-grow">
+        
+        <!-- 헤더 섹션 -->
+        <header class="text-center mb-8 sm:mb-10">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-navy-800/80 border border-navy-700 text-sky-400 text-xs sm:text-sm font-medium mb-4 shadow-sm">
+                <i class="fa-solid fa-utensils"></i>
+                <span id="current-date">오늘의 학생식당 점심 특선</span>
+            </div>
+            <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white mb-2">
+                오늘 점심, <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400">무엇을 먹을까요?</span>
+            </h1>
+            <p class="text-slate-400 text-sm sm:text-base">
+                가장 먹고 싶은 학식 메뉴 1개를 선택해 투표해주세요!
+            </p>
+        </header>
+
+        <!-- 투표 카드 영역 -->
+        <section id="voting-section" class="space-y-3 sm:space-y-4 mb-8">
+            <!-- 메뉴 아이템들은 JavaScript로 동적 렌더링됩니다 -->
+        </section>
+
+        <!-- 실시간 결과 막대그래프 섹션 -->
+        <section class="bg-navy-900/90 backdrop-blur-md border border-navy-700/80 rounded-2xl p-5 sm:p-7 shadow-2xl">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-6 pb-4 border-b border-navy-800">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center">
+                        <i class="fa-solid fa-chart-simple"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg sm:text-xl font-bold text-white">실시간 투표 현황</h2>
+                        <p class="text-xs text-slate-400">투표 시 즉시 그래프가 반영됩니다</p>
+                    </div>
+                </div>
+                <div class="bg-navy-950 px-3.5 py-1.5 rounded-xl border border-navy-800 text-right">
+                    <span class="text-xs text-slate-400 block">총 참여 인원</span>
+                    <span id="total-votes" class="text-base sm:text-lg font-bold text-sky-400">0명</span>
+                </div>
+            </div>
+
+            <!-- 막대 그래프 컨테이너 -->
+            <div id="chart-container" class="space-y-5">
+                <!-- 막대 그래프 아이템들은 JavaScript로 동적 렌더링됩니다 -->
+            </div>
+
+            <!-- 하단 액션 버튼 영역 -->
+            <div class="mt-8 pt-5 border-t border-navy-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <p id="vote-status-text" class="text-xs sm:text-sm text-slate-400 text-center sm:text-left">
+                    아직 투표하지 않으셨습니다. 위 메뉴를 클릭하세요!
+                </p>
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-end">
+                    <button id="revote-btn" onclick="resetMyVote()" class="hidden flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-navy-800 hover:bg-navy-700 text-slate-200 text-xs sm:text-sm font-medium transition-all duration-200 border border-navy-600 flex items-center justify-center gap-1.5 active:scale-95">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span>다시 투표하기</span>
+                    </button>
+                    <button onclick="openResetModal()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs sm:text-sm font-medium transition-all duration-200 border border-rose-500/30 flex items-center justify-center gap-1.5 active:scale-95">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>전체 초기화</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="relative z-10 text-center py-6 text-slate-500 text-xs">
+        <p>© 2026 대학생 학생식당 메뉴 선호도 조사 시스템</p>
+    </footer>
+
+    <!-- 토스트 알림 메시지 (alert 대신 사용) -->
+    <div id="toast-container" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-300 opacity-0 translate-y-4">
+        <div class="bg-navy-800 border border-sky-500/50 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-2.5 text-sm font-medium">
+            <i id="toast-icon" class="fa-solid fa-circle-check text-sky-400"></i>
+            <span id="toast-message">투표가 완료되었습니다!</span>
+        </div>
+    </div>
+
+    <!-- 전체 초기화 확인 모달 (confirm 대신 사용) -->
+    <div id="reset-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-navy-950/80 backdrop-blur-sm p-4">
+        <div class="bg-navy-900 border border-navy-700 rounded-2xl max-w-sm w-full p-6 shadow-2xl transform transition-all">
+            <div class="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center text-xl mb-4 mx-auto">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white text-center mb-2">투표 데이터를 초기화할까요?</h3>
+            <p class="text-sm text-slate-400 text-center mb-6">
+                모든 메뉴의 득표수가 0으로 초기화되며, 이전 데이터는 복구할 수 없습니다.
+            </p>
+            <div class="flex gap-3">
+                <button onclick="closeResetModal()" class="flex-1 py-2.5 rounded-xl bg-navy-800 hover:bg-navy-700 text-slate-300 text-sm font-semibold transition">
+                    취소
+                </button>
+                <button onclick="confirmResetAll()" class="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold transition shadow-lg shadow-rose-600/30">
+                    초기화 실행
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 초기 메뉴 데이터 구성 (기본 예시 투표수 포함하여 시각적 확인 용이)
+        const DEFAULT_MENUS = [
+            {
+                id: 'menu_1',
+                corner: 'A코너 · 한식',
+                name: '직화 제육볶음 & 계란찜 정식',
+                desc: '매콤달콤한 직화 제육볶음, 폭신한 뚝배기 계란찜, 미역국, 백미밥',
+                price: '5,500원',
+                icon: 'fa-bowl-rice',
+                barColor: 'from-sky-400 to-blue-500',
+                badgeColor: 'bg-sky-500/20 text-sky-300 border-sky-500/30',
+                votes: 14
+            },
+            {
+                id: 'menu_2',
+                corner: 'B코너 · 양식',
+                name: '수제 왕돈까스 & 크림스프',
+                desc: '바삭하게 튀긴 국내산 등심 돈까스, 특제 데미글라스 소스, 양배추 샐러드',
+                price: '6,000원',
+                icon: 'fa-burger',
+                barColor: 'from-indigo-400 to-purple-500',
+                badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
+                votes: 19
+            },
+            {
+                id: 'menu_3',
+                corner: 'C코너 · 일품/면류',
+                name: '차돌박이 숙주 쌀국수 & 짜조',
+                desc: '진한 사골 육수에 구운 차돌박이와 아삭한 숙주, 바삭한 미니 짜조 2pcs',
+                price: '5,800원',
+                icon: 'fa-bowl-food',
+                barColor: 'from-teal-400 to-emerald-500',
+                badgeColor: 'bg-teal-500/20 text-teal-300 border-teal-500/30',
+                votes: 9
+            }
+        ];
+
+        // 로컬 스토리지 키
+        const STORAGE_KEY_VOTES = 'cafeteria_vote_data_v1';
+        const STORAGE_KEY_USER_CHOICE = 'cafeteria_user_choice_v1';
+
+        // 상태 변수
+        let menus = [];
+        let userChoice = null;
+        let toastTimeout = null;
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            setFormattedDate();
+            loadData();
+            renderAll();
+        });
+
+        // 오늘 날짜 표시
+        function setFormattedDate() {
+            const dateEl = document.getElementById('current-date');
+            const now = new Date();
+            const options = { month: 'long', day: 'numeric', weekday: 'short' };
+            dateEl.textContent = `${now.toLocaleDateString('ko-KR', options)} · 학생식당 점심 투표`;
+        }
+
+        // 로컬 스토리지에서 데이터 불러오기
+        function loadData() {
+            try {
+                const savedMenus = localStorage.getItem(STORAGE_KEY_VOTES);
+                const savedChoice = localStorage.getItem(STORAGE_KEY_USER_CHOICE);
+
+                if (savedMenus) {
+                    menus = JSON.parse(savedMenus);
+                } else {
+                    menus = JSON.parse(JSON.stringify(DEFAULT_MENUS));
+                    saveData();
+                }
+
+                userChoice = savedChoice || null;
+            } catch (e) {
+                console.error('데이터 로드 오류:', e);
+                menus = JSON.parse(JSON.stringify(DEFAULT_MENUS));
+            }
+        }
+
+        // 데이터 저장
+        function saveData() {
+            try {
+                localStorage.setItem(STORAGE_KEY_VOTES, JSON.stringify(menus));
+                if (userChoice) {
+                    localStorage.setItem(STORAGE_KEY_USER_CHOICE, userChoice);
+                } else {
+                    localStorage.removeItem(STORAGE_KEY_USER_CHOICE);
+                }
+            } catch (e) {
+                console.error('데이터 저장 오류:', e);
+            }
+        }
+
+        // 투표 처리 함수
+        function handleVote(menuId) {
+            // 이미 투표한 경우 안내
+            if (userChoice !== null) {
+                if (userChoice === menuId) {
+                    showToast('이미 선택하신 메뉴입니다!', 'fa-circle-info', 'text-amber-400');
+                } else {
+                    showToast('이미 투표하셨습니다. 변경하려면 [다시 투표하기]를 눌러주세요.', 'fa-circle-exclamation', 'text-amber-400');
+                }
+                return;
+            }
+
+            // 선택한 메뉴 득표수 증가
+            const targetMenu = menus.find(m => m.id === menuId);
+            if (targetMenu) {
+                targetMenu.votes += 1;
+                userChoice = menuId;
+                saveData();
+                renderAll();
+                showToast(`'${targetMenu.name}'에 투표했습니다!`, 'fa-circle-check', 'text-sky-400');
+            }
+        }
+
+        // 내 투표 취소 (다시 투표하기)
+        function resetMyVote() {
+            if (!userChoice) return;
+
+            const prevMenu = menus.find(m => m.id === userChoice);
+            if (prevMenu && prevMenu.votes > 0) {
+                prevMenu.votes -= 1;
+            }
+            userChoice = null;
+            saveData();
+            renderAll();
+            showToast('기존 투표가 취소되었습니다. 다시 선택해주세요!', 'fa-rotate-left', 'text-sky-400');
+        }
+
+        // 전체 초기화 모달 제어
+        function openResetModal() {
+            const modal = document.getElementById('reset-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeResetModal() {
+            const modal = document.getElementById('reset-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // 전체 득표수 0으로 초기화 실행
+        function confirmResetAll() {
+            menus.forEach(m => m.votes = 0);
+            userChoice = null;
+            saveData();
+            renderAll();
+            closeResetModal();
+            showToast('모든 투표 기록이 0으로 초기화되었습니다.', 'fa-trash-can', 'text-rose-400');
+        }
+
+        // 화면 전체 렌더링
+        function renderAll() {
+            renderMenuCards();
+            renderBarChart();
+            updateStatusUI();
+        }
+
+        // 1. 투표 메뉴 카드 렌더링
+        function renderMenuCards() {
+            const container = document.getElementById('voting-section');
+            container.innerHTML = '';
+
+            menus.forEach(menu => {
+                const isSelected = userChoice === menu.id;
+                const isDisabled = userChoice !== null && !isSelected;
+
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.onclick = () => handleVote(menu.id);
+                
+                // 상태별 스타일 클래스 분기
+                let cardClasses = 'w-full text-left p-4 sm:p-5 rounded-2xl border transition-all duration-200 flex items-center justify-between gap-4 relative overflow-hidden group ';
+                
+                if (isSelected) {
+                    cardClasses += 'bg-navy-800/95 border-sky-400 ring-2 ring-sky-400/30 shadow-lg shadow-sky-950/50';
+                } else if (isDisabled) {
+                    cardClasses += 'bg-navy-900/50 border-navy-800 opacity-60 hover:opacity-80 cursor-pointer';
+                } else {
+                    cardClasses += 'bg-navy-900/80 hover:bg-navy-800 border-navy-700 hover:border-sky-500/60 shadow-md hover:shadow-xl active:scale-[0.99] cursor-pointer';
+                }
+
+                card.className = cardClasses;
+
+                card.innerHTML = `
+                    <div class="flex items-start sm:items-center gap-3.5 sm:gap-4 flex-1 min-w-0">
+                        <!-- 메뉴 아이콘 박스 -->
+                        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex-shrink-0 flex items-center justify-center text-xl sm:text-2xl transition-transform duration-200 group-hover:scale-105 ${isSelected ? 'bg-sky-500 text-navy-950 shadow-md shadow-sky-500/30' : 'bg-navy-800 text-sky-400 border border-navy-700'}">
+                            <i class="fa-solid ${menu.icon}"></i>
+                        </div>
+                        
+                        <!-- 메뉴 상세 텍스트 -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex flex-wrap items-center gap-2 mb-1">
+                                <span class="text-[11px] sm:text-xs font-semibold px-2.5 py-0.5 rounded-md border ${menu.badgeColor}">
+                                    ${menu.corner}
+                                </span>
+                                <span class="text-xs font-medium text-slate-400">${menu.price}</span>
+                            </div>
+                            <h3 class="text-base sm:text-lg font-bold text-white truncate group-hover:text-sky-300 transition-colors">
+                                ${menu.name}
+                            </h3>
+                            <p class="text-xs sm:text-sm text-slate-400 line-clamp-1 mt-0.5">
+                                ${menu.desc}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 우측 선택 인디케이터 -->
+                    <div class="flex-shrink-0">
+                        ${isSelected 
+                            ? `<div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-sky-400 text-navy-950 flex items-center justify-center font-bold shadow-md">
+                                 <i class="fa-solid fa-check"></i>
+                               </div>`
+                            : `<div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full border-2 border-navy-600 group-hover:border-sky-400 flex items-center justify-center text-transparent group-hover:text-sky-400/50 transition-colors">
+                                 <i class="fa-solid fa-check text-xs"></i>
+                               </div>`
+                        }
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // 2. 실시간 막대 그래프 렌더링
+        function renderBarChart() {
+            const chartContainer = document.getElementById('chart-container');
+            const totalVotesEl = document.getElementById('total-votes');
+            
+            const totalVotes = menus.reduce((sum, item) => sum + item.votes, 0);
+            totalVotesEl.textContent = `${totalVotes.toLocaleString()}명`;
+
+            // 최고 득표수 계산 (1위 배지 표시용)
+            const maxVotes = Math.max(...menus.map(m => m.votes));
+
+            chartContainer.innerHTML = '';
+
+            menus.forEach(menu => {
+                const percentage = totalVotes === 0 ? 0 : Math.round((menu.votes / totalVotes) * 100);
+                const isWinner = totalVotes > 0 && menu.votes === maxVotes;
+                const isMyChoice = userChoice === menu.id;
+
+                const barWrapper = document.createElement('div');
+                barWrapper.className = 'space-y-2';
+
+                barWrapper.innerHTML = `
+                    <div class="flex items-end justify-between gap-2 text-sm">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="font-bold text-slate-100 truncate">${menu.name}</span>
+                            ${isWinner ? `<span class="flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30"><i class="fa-solid fa-crown text-[10px]"></i> 1위</span>` : ''}
+                            ${isMyChoice ? `<span class="flex-shrink-0 px-2 py-0.5 rounded text-[11px] font-semibold bg-sky-500/20 text-sky-300">내 선택</span>` : ''}
+                        </div>
+                        <div class="flex-shrink-0 text-right">
+                            <span class="font-extrabold text-white text-base">${percentage}%</span>
+                            <span class="text-xs text-slate-400 ml-1">(${menu.votes}표)</span>
+                        </div>
+                    </div>
+
+                    <!-- 막대 그래프 트랙 -->
+                    <div class="w-full h-4 sm:h-5 bg-navy-950 rounded-full overflow-hidden p-0.5 border border-navy-800 shadow-inner">
+                        <!-- 실제 채워지는 막대 (부드러운 애니메이션) -->
+                        <div 
+                            class="h-full rounded-full bg-gradient-to-r ${menu.barColor} transition-all duration-700 ease-out relative"
+                            style="width: ${percentage}%"
+                        >
+                            ${percentage > 8 ? `<div class="absolute inset-0 bg-white/10 animate-pulse"></div>` : ''}
+                        </div>
+                    </div>
+                `;
+
+                chartContainer.appendChild(barWrapper);
+            });
+        }
+
+        // 3. 하단 상태 안내 및 다시 투표하기 버튼 업데이트
+        function updateStatusUI() {
+            const statusText = document.getElementById('vote-status-text');
+            const revoteBtn = document.getElementById('revote-btn');
+
+            if (userChoice) {
+                const selectedMenu = menus.find(m => m.id === userChoice);
+                statusText.innerHTML = `<span class="text-sky-400 font-semibold"><i class="fa-solid fa-circle-check mr-1"></i>투표 완료:</span> ${selectedMenu ? selectedMenu.name : ''}`;
+                revoteBtn.classList.remove('hidden');
+            } else {
+                statusText.textContent = '아직 투표하지 않으셨습니다. 위 메뉴를 클릭하세요!';
+                revoteBtn.classList.add('hidden');
+            }
+        }
+
+        // 커스텀 토스트 메시지 표시
+        function showToast(message, iconClass = 'fa-circle-check', colorClass = 'text-sky-400') {
+            const container = document.getElementById('toast-container');
+            const msgEl = document.getElementById('toast-message');
+            const iconEl = document.getElementById('toast-icon');
+
+            msgEl.textContent = message;
+            iconEl.className = `fa-solid ${iconClass} ${colorClass}`;
+
+            container.classList.remove('opacity-0', 'translate-y-4');
+            container.classList.add('opacity-100', 'translate-y-0');
+
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                container.classList.remove('opacity-100', 'translate-y-0');
+                container.classList.add('opacity-0', 'translate-y-4');
+            }, 2800);
+        }
+    </script>
+</body>
+</html>
